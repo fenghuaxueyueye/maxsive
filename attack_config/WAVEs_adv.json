@@ -1,0 +1,10 @@
+{  
+    "adv_clip_2": "adv_clip_2.jpg",
+    "adv_clip_4": "adv_clip_4.jpg",
+    "adv_clip_6": "adv_clip_6.jpg",
+    "adv_clip_8": "adv_clip_8.jpg",
+    "adv_resnet18_2" : "adv_resnet18_2.jpg",
+    "adv_resnet18_4" : "adv_resnet18_4.jpg",
+    "adv_resnet18_6" : "adv_resnet18_6.jpg",
+    "adv_resnet18_8" : "adv_resnet18_8.jpg"
+}

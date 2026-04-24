@@ -1,0 +1,13 @@
+{  
+    "regen_diff_50": "regen_diff_50.jpg",
+    "regen_diff_100": "regen_diff_100.jpg",
+    "regen_diff_150": "regen_diff_150.jpg",
+    "regen_diff_200": "regen_diff_200.jpg",
+    "regen_diffp_50": "regen_diffp_50.jpg",
+    "regen_diffp_100": "regen_diffp_100.jpg",
+    "regen_diffp_150": "regen_diffp_150.jpg",
+    "regen_diffp_200": "regen_diffp_200.jpg",
+    "regen_VAE_1": "regen_VAE_1.jpg",
+    "regen_VAE_4": "regen_VAE_4.jpg",
+    "regen_VAE_8": "regen_VAE_8.jpg"
+}

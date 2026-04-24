@@ -1,0 +1,10 @@
+{  
+    "rotation_1": "rotation_1.jpg",
+    "resizedcrop_0_25": "resizedcrop_0_25.jpg",
+    "blurring_0_75": "blurring_0_75.jpg",
+    "brightness_1": "brightness_1.jpg",
+    "compression_1": "compression_1.jpg",
+    "contrast_1": "contrast_1.jpg",
+    "erasing_1": "erasing_1.jpg",
+    "noise_1": "noise_1.jpg"
+}
