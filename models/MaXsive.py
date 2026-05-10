@@ -220,6 +220,8 @@ class MaXsive(watermark):
 
     def bit_accuracy(self, z, data, rotation_restore=True):
         recovered_w, target_w = self.recover_watermark(z, data, rotation_restore=rotation_restore)
+        target_w = target_w.to(recovered_w.device)
+
         recovered_bits = (recovered_w > 0).to(torch.int)
         target_bits = (target_w > 0).to(torch.int)
 
