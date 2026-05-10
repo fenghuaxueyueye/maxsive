@@ -15,7 +15,7 @@ from diffusers import DPMSolverMultistepScheduler
 import torch
 
 
-def evaluate(image , data , pipe , text_embeddings , watermark , device):
+def evaluate(image , data , pipe , text_embeddings , watermark , device, eval_bit_acc=False):
     image_w_distortion = transform_img(image).unsqueeze(0).to(text_embeddings.dtype).to(device)
     image_latents_w = pipe.get_image_latents(image_w_distortion, sample=False)
     reversed_latents_w = pipe.forward_diffusion(
@@ -24,7 +24,12 @@ def evaluate(image , data , pipe , text_embeddings , watermark , device):
         guidance_scale=1,
         num_inference_steps=50,
     )
-    return watermark.detection(reversed_latents_w ,data )
+    result = {
+        'tpr': watermark.detection(reversed_latents_w ,data )
+    }
+    if eval_bit_acc:
+        result.update(watermark.bit_accuracy(reversed_latents_w, data))
+    return result
 
 def main(args):
     watermark = load_watermark(args)
@@ -59,6 +64,8 @@ def main(args):
     for distortion in distortion_type:
         print( 'working on ', distortion)
         tpr = []
+        bit_acc = []
+        ber = []
 
         for num in trange(args.num):
             num_ = "{:04d}".format(num)
@@ -66,13 +73,22 @@ def main(args):
             data = torch.load(data_root +num_+'.pt' )
             positive_image = Image.open( positive_path + num_+ '/'+ num_+ '_'+ distortion_type[distortion]  )
 
-            tpr.append(evaluate(positive_image , data , pipe , text_embeddings , watermark , device))
-            print( 'tpr : ' , np.array(tpr).mean()  , ' tpr last : ' , tpr[-1])
+            eval_result = evaluate(positive_image , data , pipe , text_embeddings , watermark , device, args.eval_bit_acc)
+            tpr.append(eval_result['tpr'])
+            if args.eval_bit_acc:
+                bit_acc.append(eval_result['bit_acc'])
+                ber.append(eval_result['ber'])
+                print( 'tpr : ' , np.array(tpr).mean()  , ' tpr last : ' , tpr[-1], ' bit_acc : ', np.array(bit_acc).mean(), ' bit_acc last : ', bit_acc[-1], ' ber : ', np.array(ber).mean(), ' ber last : ', ber[-1])
+            else:
+                print( 'tpr : ' , np.array(tpr).mean()  , ' tpr last : ' , tpr[-1])
         
 
+        output_line = str(distortion) + ' -  ' + 'tpr:' + str(np.array(tpr).mean())
+        if args.eval_bit_acc:
+            output_line += ' bit_acc:' + str(np.array(bit_acc).mean()) + ' ber:' + str(np.array(ber).mean())
+
         with open(args.output_path + args.filename, "a") as file:
-            file.write( str(distortion) + ' -  '
-                'tpr:' + str(np.array(tpr).mean()) + '\n')
+            file.write(output_line + '\n')
 
 
 if __name__ == '__main__':
@@ -82,6 +98,7 @@ if __name__ == '__main__':
     parser.add_argument('--watermark_model', default='MaXsive' , choices=['tree-ring' , 'Gaussian-shading', 'MaXsive' , 'RingID' ])
     parser.add_argument('--num' , default= 100 , type=int)
     parser.add_argument('--tpr_file' , default= None )
+    parser.add_argument('--eval_bit_acc', action='store_true', help='evaluate bit accuracy and bit error rate for MaXsive watermark')
 
     parser.add_argument('--diffusion_bit', default=16, type=int)
     ### watermark args 
