@@ -209,18 +209,33 @@ class MaXsive(watermark):
         return data['keys']
         # return data
     
-    def detection(self ,  z , data ,rotation_restore = True ):
+    def recover_watermark(self, z, data, rotation_restore=True):
         keys = self.load_watermark_info(data)
         if rotation_restore:
-            z = self.template_restore(z )
+            z = self.template_restore(z)
 
-        rotate_zs = self.k2_decode( z , keys[1]  )
+        rotate_zs = self.k2_decode(z, keys[1])
         vote_rotate_z = self.voting(rotate_zs)
-#         print(vote_rotate_z[:3].shape)
+        return vote_rotate_z.reshape(1, -1), keys[0].reshape(1, -1)
 
-        w = keys[0].reshape(1,-1).cuda()
-        
-        vote_rotate_z = vote_rotate_z.reshape(1,-1).cuda()
+    def bit_accuracy(self, z, data, rotation_restore=True):
+        recovered_w, target_w = self.recover_watermark(z, data, rotation_restore=rotation_restore)
+        target_w = target_w.to(recovered_w.device)
+
+        recovered_bits = (recovered_w > 0).to(torch.int)
+        target_bits = (target_w > 0).to(torch.int)
+
+        bit_acc = (recovered_bits == target_bits).float().mean().item()
+        return {
+            'bit_acc': bit_acc,
+            'ber': 1.0 - bit_acc,
+        }
+    
+    def detection(self ,  z , data ,rotation_restore = True ):
+        vote_rotate_z, w = self.recover_watermark(z, data, rotation_restore=rotation_restore)
+
+        w = w.cuda()
+        vote_rotate_z = vote_rotate_z.cuda()
         if self.distant_func == 'corr':
             cor1 = torch.corrcoef( torch.concat( [ w , vote_rotate_z]) )
             distant = abs(cor1[0,1].item() )
